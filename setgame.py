@@ -1,26 +1,39 @@
 import random
+import time
 
 class SetGame:
     """
     A game of set consists of a deck of unique cards and a number of
     cards on the table.
     """
-    # cards_in_deck = []
-    # cards_on_table = []
+    __start_time = None
+    __is_running = False
 
-    # selected_indices = []
-    # taken_sets = []
+    __cards_in_deck = []
+    __cards_on_table = []
+    __sets_on_table = []
+
+    __selected_indices = []
+    __taken_sets = []
 
     def __init__(self):
         """
         Initializes a new game of set by creating a new deck of cards
         and placing 12 of them on the table.
         """
-        self.cards_in_deck = []
-        self.cards_on_table = []
+        self.reset_game()
 
-        self.selected_indices = []
-        self.taken_sets = []
+
+    def reset_game(self):
+        self.__start_time = time.time()
+        self.__is_running = True
+
+        self.__cards_in_deck = []
+        self.__cards_on_table = []
+        self.__sets_on_table = []
+
+        self.__selected_indices = []
+        self.__taken_sets = []
 
         # Create a deck of 81 unique cards
         for shape in range(3):
@@ -28,40 +41,41 @@ class SetGame:
                 for number in range(3):
                     for shading in range(3):
                         new_card = (shape, color, number, shading)
-                        self.cards_in_deck.append(new_card)
+                        self.__cards_in_deck.append(new_card)
 
         # Shuffle the deck
-        random.shuffle(self.cards_in_deck)
-
-        # Move 12 cards from the deck to the table
-        for i in range(12):
-            self.cards_on_table.append(self.cards_in_deck.pop())
+        random.shuffle(self.__cards_in_deck)
 
         # If there are no sets on the table, add three more cards at a time until there is
-        while len(self.get_sets_on_table()) == 0:
-            print("No set found, adding 3 new cards...")
-            for i in range(3):
-                self.cards_on_table.append(self.cards_in_deck.pop())
+        self.__refill_table()
 
         print("≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈")
         print("Starting new game...")
         print("≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈")
 
 
+    def is_running(self):
+        return self.__is_running
+
+
     def get_cards_in_deck(self):
-        return self.cards_in_deck
+        return self.__cards_in_deck
 
 
     def get_cards_on_table(self):
-        return self.cards_on_table
+        return self.__cards_on_table
+
+
+    def get_sets_on_table(self):
+        return self.__sets_on_table
 
 
     def get_taken_sets(self):
-        return self.taken_sets
+        return self.__taken_sets
 
 
     def get_selected_indices(self):
-        return self.selected_indices
+        return self.__selected_indices
 
 
     def is_selected(self, index):
@@ -70,7 +84,7 @@ class SetGame:
             print("Warning: is_selected() - index is not an int")
             return False
 
-        return index in self.selected_indices
+        return index in self.__selected_indices
 
 
     def select_index(self, index):
@@ -85,28 +99,24 @@ class SetGame:
             return False
 
         # Check if the index a avalid number
-        if index >= len(self.cards_on_table):
+        if index >= len(self.__cards_on_table):
             return False
 
         # Check if the index is not already selected
-        if index in self.selected_indices:
+        if index in self.__selected_indices:
             return False
 
-        self.selected_indices.append(index)
+        self.__selected_indices.append(index)
 
         # If this is the third index selected, try to take the set
-        if len(self.selected_indices) > 2:
-            index_1 = self.selected_indices[0]
-            index_2 = self.selected_indices[1]
-            index_3 = self.selected_indices[2]
+        if len(self.__selected_indices) > 2:
+            index_1 = self.__selected_indices[0]
+            index_2 = self.__selected_indices[1]
+            index_3 = self.__selected_indices[2]
+
             taken_set = self.__try_take_set(index_1, index_2, index_3)
 
-            if taken_set is None:
-                print("Invalid set at positions", index_1, index_2, index_3)
-            else:
-                print("Found set", taken_set, "at", index_1, index_2, index_3)
-
-            self.selected_indices.clear()
+            self.__selected_indices.clear()
 
         return True
 
@@ -118,8 +128,8 @@ class SetGame:
             return False
 
         # Remove the index from selected indices and return True
-        if index in self.selected_indices:
-            self.selected_indices.remove(index)
+        if index in self.__selected_indices:
+            self.__selected_indices.remove(index)
             return True
 
         # If the index was not selected before, return False
@@ -127,36 +137,12 @@ class SetGame:
 
 
     def print_game(self):
-        print("Cards left in deck:", len(self.cards_in_deck))
-        print("Sets found:", len(self.taken_sets))
+        print("\nCards left in deck:", len(self.__cards_in_deck))
+        print("Sets found:", len(self.__taken_sets))
         print("+----------------------------------------+")
         for i in range(4):
-            print("|", self.cards_on_table[3*i], self.cards_on_table[3*i + 1], self.cards_on_table[3*i + 2], "|")
+            print("|", self.__cards_on_table[3*i], self.__cards_on_table[3*i + 1], self.__cards_on_table[3*i + 2], "|")
         print("+----------------------------------------+")
-
-
-    def get_sets_on_table(self):
-        found_sets = []
-
-        for i in range(12):
-            for j in range(i, 12):
-                for k in range(j, 12):
-                    # Make sure that all three incides are unique
-                    if not self.__different_indices(i, j, k):
-                        # print("The indices are not unique! Please choose three unique indices.")
-                        continue
-
-                    card_1 = self.cards_on_table[i]
-                    card_2 = self.cards_on_table[j]
-                    card_3 = self.cards_on_table[k]
-                    found_set = (card_1, card_2, card_3)
-
-                    # Make sure that the given cards form a set
-                    if self.__is_set(card_1, card_2, card_3):
-                        print("Set found on positions:", i, j, k, "Set is:", found_set)
-                        found_sets.append(found_set)
-
-        return found_sets
 
 
 ################################################################################
@@ -198,36 +184,85 @@ class SetGame:
         cards in the taken set. Returns None if the cards don't form a
         set.
         """
+        print("Taking set at", index_1, index_2, index_3)
 
         # Make sure that all three incides are unique
         if not self.__different_indices(index_1, index_2, index_3):
             print("The indices are not unique! Please choose three unique indices.")
             return None
 
-        card_1 = self.cards_on_table[index_1]
-        card_2 = self.cards_on_table[index_2]
-        card_3 = self.cards_on_table[index_3]
+        card_1 = self.__cards_on_table[index_1]
+        card_2 = self.__cards_on_table[index_2]
+        card_3 = self.__cards_on_table[index_3]
         taken_set = (card_1, card_2, card_3)
 
         # Make sure that the given cards form a set
         if not self.__is_set(card_1, card_2, card_3):
             # print("The given cards do not form a set, sorry...", taken_set)
+            print("INVALID SET! - Set:", taken_set)
             return None
+        print("VALID SET! - Set:", taken_set)
 
         # print("You found a set, congratulations!", taken_set)
-        self.taken_sets.append(taken_set)
+        self.__taken_sets.append(taken_set)
 
         # Remove the cards at the given indices
-        self.cards_on_table = [element for i,element in enumerate(self.cards_on_table) if i not in [index_1, index_2, index_3]]
-
-        # If there are fewer than 12 cards left on the table, add 3 new cards
-        if len(self.cards_on_table) < 12:
-            for i in range(3):
-                self.cards_on_table.append(self.cards_in_deck.pop())
+        self.__cards_on_table = [element for i,element in enumerate(self.__cards_on_table) if i not in [index_1, index_2, index_3]]
 
         # If there are no sets on the table, add three more cards at a time until there is
-        while len(self.get_sets_on_table()) == 0:
-            for i in range(3):
-                self.cards_on_table.append(self.cards_in_deck.pop())
+        self.__refill_table()
 
         return taken_set
+
+
+    def __refill_table(self):
+        # Make sure that there are at least 12 cards on the table
+        while len(self.__cards_on_table) < 12:
+            if not self.__cards_in_deck:
+                break
+            self.__cards_on_table.append(self.__cards_in_deck.pop())
+
+        # If there are no sets on the table, add three more cards at a time until there is
+        self.__find_sets_on_table()
+        while len(self.__sets_on_table) == 0:
+            if not self.__cards_in_deck:
+                print("No more sets can be crated. Ending game...")
+                self.__game_over()
+                return
+            print("No set found, adding 3 new cards...")
+            for i in range(3):
+                self.__cards_on_table.append(self.__cards_in_deck.pop())
+            self.__find_sets_on_table()
+
+
+    def __find_sets_on_table(self):
+        print("Finding sets...")
+
+        self.__sets_on_table = []
+        number_of_cards_on_table = len(self.__cards_on_table)
+
+        for i in range(number_of_cards_on_table):
+            for j in range(i, number_of_cards_on_table):
+                for k in range(j, number_of_cards_on_table):
+                    # Make sure that all three incides are unique
+                    if not self.__different_indices(i, j, k):
+                        # print("The indices are not unique! Please choose three unique indices.")
+                        continue
+
+                    card_1 = self.__cards_on_table[i]
+                    card_2 = self.__cards_on_table[j]
+                    card_3 = self.__cards_on_table[k]
+                    found_set = (card_1, card_2, card_3)
+
+                    # If the cards form a set, add them to the sets on table
+                    if self.__is_set(card_1, card_2, card_3):
+                        print("Set found on positions:", i, j, k, "| Set is:", found_set)
+                        self.__sets_on_table.append((i, j, k))
+
+        print(len(self.__sets_on_table), "sets found!")
+
+
+    def __game_over(self):
+        game_time = int(time.time() - self.__start_time)
+        self.__is_running = False
+        print("Game over! You found", len(self.__taken_sets), "sets in", game_time, "seconds!")

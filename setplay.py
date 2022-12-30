@@ -28,7 +28,7 @@ def play_cli_game():
                 print(taken_set)
         elif input_str == "f":
             print("Finding all sets...")
-            found_sets = setgame.get_sets_on_table()
+            found_sets = setgame.__find_sets_on_table()
             print("Found", len(found_sets), "sets!")
             print("Sets in the board:", found_sets)
         elif input_str == "t":
