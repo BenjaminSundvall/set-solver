@@ -86,6 +86,16 @@ class SetGame:
 
         return index in self.__selected_indices
 
+    def toggle_selection(self, index):
+        if index >= len(self.__cards_on_table):
+            return
+
+        if index in self.__selected_indices:
+            print("Deselected card at position", index)
+            self.deselect_index(index)
+        else:
+            print("Selected card at",index)
+            self.select_index(index)
 
     def select_index(self, index):
         """
@@ -223,7 +233,7 @@ class SetGame:
             self.__cards_on_table.append(self.__cards_in_deck.pop())
 
         # If there are no sets on the table, add three more cards at a time until there is
-        self.__find_sets_on_table()
+        self.__find_sets_brute()
         while len(self.__sets_on_table) == 0:
             if not self.__cards_in_deck:
                 print("No more sets can be crated. Ending game...")
@@ -232,11 +242,13 @@ class SetGame:
             print("No set found, adding 3 new cards...")
             for i in range(3):
                 self.__cards_on_table.append(self.__cards_in_deck.pop())
-            self.__find_sets_on_table()
+            self.__find_sets_brute()
 
 
-    def __find_sets_on_table(self):
-        print("Finding sets...")
+    def __find_sets_brute(self):
+        print("Finding sets... (brute)")
+
+        start_time = time.time()
 
         self.__sets_on_table = []
         number_of_cards_on_table = len(self.__cards_on_table)
@@ -244,6 +256,7 @@ class SetGame:
         for i in range(number_of_cards_on_table):
             for j in range(i, number_of_cards_on_table):
                 for k in range(j, number_of_cards_on_table):
+
                     # Make sure that all three incides are unique
                     if not self.__different_indices(i, j, k):
                         # print("The indices are not unique! Please choose three unique indices.")
@@ -259,7 +272,10 @@ class SetGame:
                         print("Set found on positions:", i, j, k, "| Set is:", found_set)
                         self.__sets_on_table.append((i, j, k))
 
-        print(len(self.__sets_on_table), "sets found!")
+        search_time_s = time.time() - start_time
+        search_time_us = search_time_s * 1000000
+        print(len(self.__sets_on_table), "sets found in", search_time_us, "us (brute)")
+        return search_time_us
 
 
     def __game_over(self):

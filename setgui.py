@@ -54,6 +54,7 @@ class SetGUI():
     def __init__(self, setgame):
         self.setgame = setgame
 
+
     def show(self):
         pygame.init()
         self.screen = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT))
@@ -69,44 +70,57 @@ class SetGUI():
             if event.type == pygame.QUIT:
                 print("Quitting game...")
                 exit()
-            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                # Figure out which card was clicked
-                mouse_coords = pygame.mouse.get_pos()
-                card_position = self.__coords_to_index(mouse_coords)
-
-                if card_position >= len(self.setgame.get_cards_on_table()):
-                    continue
-
-                # Toggle selection of the clicked card
-                if card_position in self.setgame.get_selected_indices():
-                    print("Deselected card at position", card_position)
-                    self.setgame.deselect_index(card_position)
-                else:
-                    print("Selected card at", card_position)
-                    self.setgame.select_index(card_position)
-            elif event.type == pygame.KEYDOWN:
-                # [r]eset game
-                if event.key == pygame.K_r:
-                    self.setgame.reset_game()
-                # [p]rint game state to console
-                if event.key == pygame.K_p:
-                    self.setgame.print_game()
-                # [f]ind a set on the table
-                if event.key == pygame.K_f:
-                    number_of_sets = len(self.setgame.get_sets_on_table())
-                    self.shown_set += 1
-                    if self.shown_set == number_of_sets:
-                        self.shown_set = -1
-
-                    if self.shown_set == -1:
-                        print("Hiding sets...")
-                    else:
-                        print("Showing set", self.shown_set+1, "of", number_of_sets)
+            else:
+                self.__handle_event(event)
 
         if self.setgame.is_running():
             self.__draw_game()
         else:
             self.__show_score()
+
+
+    def __handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            mouse_coords = pygame.mouse.get_pos()
+            card_position = self.__coords_to_index(mouse_coords)
+            self.setgame.toggle_selection(card_position)
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:    # [esc] Close game
+                print("Quitting game...")
+                exit()
+            if event.key == pygame.K_r:         # [r]eset game
+                self.setgame.reset_game()
+            if event.key == pygame.K_p:         # [p]rint game state to console
+                self.setgame.print_game()
+            if event.key == pygame.K_f:         # [f]ind a set on the table
+                number_of_sets = len(self.setgame.get_sets_on_table())
+                self.shown_set += 1
+                if self.shown_set == number_of_sets:
+                    self.shown_set = -1
+            if event.key == pygame.K_NUMLOCK:
+                self.setgame.toggle_selection(0)
+            if event.key == pygame.K_KP_DIVIDE:
+                self.setgame.toggle_selection(1)
+            if event.key == pygame.K_KP_MULTIPLY:
+                self.setgame.toggle_selection(2)
+            if event.key == pygame.K_KP7:
+                self.setgame.toggle_selection(3)
+            if event.key == pygame.K_KP8:
+                self.setgame.toggle_selection(4)
+            if event.key == pygame.K_KP9:
+                self.setgame.toggle_selection(5)
+            if event.key == pygame.K_KP4:
+                self.setgame.toggle_selection(6)
+            if event.key == pygame.K_KP5:
+                self.setgame.toggle_selection(7)
+            if event.key == pygame.K_KP6:
+                self.setgame.toggle_selection(8)
+            if event.key == pygame.K_KP1:
+                self.setgame.toggle_selection(9)
+            if event.key == pygame.K_KP2:
+                self.setgame.toggle_selection(10)
+            if event.key == pygame.K_KP3:
+                self.setgame.toggle_selection(11)
 
 
     def __coords_to_index(self, coords):
